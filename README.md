@@ -1,14 +1,14 @@
-###Spring-backed TTRPG Content Generator
+### Spring-backed TTRPG Content Generator
 * Custom monster generation, saving, editing, and exporting
 * That's it for now, honestly. I'll add more when I can.
 
-###Short Technical Overview
+### Short Technical Overview
 * Utilizes Spring MVC controllers/repositories
 * Spring data for accessing a local MongoDB installation.
 * itext 7 community used for PDF manipulation
 * MongoDB for data persistence
 
-###How to Run
+### How to Run
 
 1. To run, download the repository, import sources from maven (pom.xml),
 run a mongo server (port 27017 default, or change in applications.properties)
