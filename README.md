@@ -18,6 +18,6 @@ run a mongo server (port 27017 default, or change in applications.properties)
 3. Make requests to localhost port 6969 (default) or change in properties.
 
 *NOTE:* The user interface of the application must be placed under resources/static, and is not included in this repository. 
-Please refer to [dnd-app]("https://github.com/leolwelter/dnd-app/") for the Angular 6 front end.
+Please refer to [dnd-app](https://github.com/leolwelter/dnd-app) for the Angular 6 front end.
 
 
