@@ -1,6 +1,9 @@
 package com.lw.dmappserver.service;
 
 import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.events.PdfDocumentEvent;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
@@ -10,9 +13,7 @@ import com.itextpdf.layout.ColumnDocumentRenderer;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.property.AreaBreakType;
-import com.itextpdf.layout.property.HorizontalAlignment;
 import com.itextpdf.layout.property.TextAlignment;
-import com.itextpdf.layout.property.VerticalAlignment;
 import com.lw.dmappserver.monster.Feature;
 import com.lw.dmappserver.monster.Monster;
 
@@ -41,7 +42,6 @@ public class ExportService {
         // document contents
         writeMonsterProperties(document, monster);
 
-
         document.close();
         return outputStream.toByteArray();
     }
@@ -49,7 +49,6 @@ public class ExportService {
     public byte[] exportToPdf(LinkedList<Monster> monsterList) throws Exception {
         if (monsterList.size() == 0)
             return null;
-
 
         // document properties
         outputStream.flush();
@@ -63,14 +62,21 @@ public class ExportService {
             document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
         }
 
-        document.getPdfDocument().removePage(document.getPdfDocument().getNumberOfPages());
+        document.getPdfDocument().removePage(document.getPdfDocument().getLastPage());
         document.close();
         return outputStream.toByteArray();
     }
 
     private Document writeMonsterProperties(Document document, Monster monster) throws MalformedURLException {
         // logo
-        Image image = new Image(ImageDataFactory.create(logoPath)).setWidth(16);
+        Image logoImage = new Image(ImageDataFactory.create(logoPath)).setWidth(16);
+
+        // add event handler to PdfDocument that adds the background image and page number every time a page is finalized
+        Image backgroundImage = new Image(ImageDataFactory.create("_assets/scroll-A4.png"))
+                .scaleToFit(PageSize.A4.getWidth(), PageSize.A4.getHeight())
+                .setFixedPosition(0,0);
+        BackgroundEventHandler handler = new BackgroundEventHandler(backgroundImage);
+        document.getPdfDocument().addEventHandler(PdfDocumentEvent.END_PAGE, handler);
 
         // set column configurations
         float offSet = 36;
@@ -99,54 +105,54 @@ public class ExportService {
 
         // features
         Paragraph features = new Paragraph();
-        features.add(new Text("Features\n").setBold().setUnderline().setTextAlignment(TextAlignment.CENTER));
-        for (Feature feature : monster.getFeatures()) {
-            features
-                .add(new Text(feature.name).setBold())
-                .add(new Tab())
-                .add(new Text("\n"))
-                .add(new Text(feature.description).setTextAlignment(TextAlignment.RIGHT))
-                .add(new Text("\n"));
+        if (monster.getFeatures().length != 0) {
+            features.add(new Text("Features\n").setBold().setUnderline().setTextAlignment(TextAlignment.CENTER));
+            for (Feature feature : monster.getFeatures()) {
+                features
+                        .add(new Text(feature.name).setBold())
+                        .add(new Tab())
+                        .add(new Text("\n"))
+                        .add(new Text(feature.description).setTextAlignment(TextAlignment.RIGHT))
+                        .add(new Text("\n"));
+            }
         }
 
         // actions
         Paragraph actions = new Paragraph();
-        actions.add(new Text("Actions\n").setBold().setUnderline().setTextAlignment(TextAlignment.CENTER));
-        for (Feature act: monster.getActions()) {
-            actions
-                    .add(new Text(act.name).setBold())
-                    .add(new Tab())
-                    .add(new Text("\n"))
-                    .add(new Text(act.description).setTextAlignment(TextAlignment.RIGHT))
-                    .add(new Text("\n"));
+        if (monster.getActions().length != 0) {
+            actions.add(new Text("Actions\n").setBold().setUnderline().setTextAlignment(TextAlignment.CENTER));
+            for (Feature act: monster.getActions()) {
+                actions
+                        .add(new Text(act.name).setBold())
+                        .add(new Tab())
+                        .add(new Text("\n"))
+                        .add(new Text(act.description).setTextAlignment(TextAlignment.RIGHT))
+                        .add(new Text("\n"));
+            }
         }
 
-
+        // *legendary* actions
+        Paragraph legendaryActions = new Paragraph();
+        if (monster.getLegendaryActions().length != 0) {
+            legendaryActions.add(new Text("Legendary Actions\n").setBold().setUnderline().setTextAlignment(TextAlignment.CENTER));
+            for (Feature lAct: monster.getLegendaryActions()) {
+                legendaryActions
+                        .add(new Text(lAct.name).setBold())
+                        .add(new Tab())
+                        .add(new Text("\n"))
+                        .add(new Text(lAct.description).setTextAlignment(TextAlignment.RIGHT))
+                        .add(new Text("\n"));
+            }
+        }
 
         // construct document from component parts
-        document.add(image)
+        document.add(logoImage)
                 .add(baseStats)
                 .add(features)
-                .add(actions);
-
-
-        // write page number to current page
-        writePageNumber(document).add(new AreaBreak(AreaBreakType.NEXT_PAGE));
-
+                .add(actions)
+                .add(legendaryActions)
+                .add(new AreaBreak(AreaBreakType.NEXT_PAGE));
 
         return document;
     }
-
-    private Document writePageNumber(Document document) {
-        float x = 595 / 2;
-        float y = 20;
-        int i = document.getPdfDocument().getNumberOfPages();
-        document.add(new Paragraph(String.format("%s", i))
-                .setFixedPosition(x, y, 50)
-                .setMargins(0,0,0,0)
-        );
-
-        return document;
-    }
-
 }
