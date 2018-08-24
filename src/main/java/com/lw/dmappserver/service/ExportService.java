@@ -26,7 +26,8 @@ import java.util.Map;
 public class ExportService {
     private ByteArrayOutputStream outputStream;
     private PdfWriter writer;
-    private static String logoPath = "/home/leo/work/dm-app-server/src/main/resources/static/favicon.ico";
+    private static String logoPath = "_assets/favicon.ico";
+    private static String scrollPath = "_assets/scroll-A4.png";
 
     public ExportService() {
         outputStream = new ByteArrayOutputStream();
@@ -72,7 +73,7 @@ public class ExportService {
         Image logoImage = new Image(ImageDataFactory.create(logoPath)).setWidth(16);
 
         // add event handler to PdfDocument that adds the background image and page number every time a page is finalized
-        Image backgroundImage = new Image(ImageDataFactory.create("_assets/scroll-A4.png"))
+        Image backgroundImage = new Image(ImageDataFactory.create(scrollPath))
                 .scaleToFit(PageSize.A4.getWidth(), PageSize.A4.getHeight())
                 .setFixedPosition(0,0);
         BackgroundEventHandler handler = new BackgroundEventHandler(backgroundImage);

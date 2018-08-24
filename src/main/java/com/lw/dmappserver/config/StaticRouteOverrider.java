@@ -1,4 +1,4 @@
-package com.lw.dmappserver;
+package com.lw.dmappserver.config;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
