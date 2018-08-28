@@ -2,6 +2,8 @@ package com.lw.dmappserver.monster;
 
 import com.lw.dmappserver.factory.ServiceFactory;
 import com.lw.dmappserver.service.ExportService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +15,7 @@ import java.util.List;
 @RestController
 public class MonsterController {
     private MonsterRepository repo;
+    private static final Logger logger = LogManager.getLogger(MonsterController.class);
 
     public MonsterController(MonsterRepository repo) {
         this.repo = repo;
@@ -30,13 +33,13 @@ public class MonsterController {
     @RequestMapping(value ="/monsters/all")
     public List<Monster> findAll() {
         List<Monster> tmp = repo.findAll();
-        System.out.println("Found " + tmp.size() + " records");
+        logger.info("Found " + tmp.size() + " records");
         return tmp;
     }
 
     @RequestMapping(method=RequestMethod.GET, value = "/monsters/{id}")
     public Monster findById(@PathVariable String id) {
-        System.out.println("Finding monster: " + id);
+        logger.info("Finding monster: " + id);
         Monster tmp = repo.findMonsterById(id);
         return tmp;
     }
@@ -46,7 +49,7 @@ public class MonsterController {
                                       @RequestParam(name = "userId") String userId) {
         if (userId != null && name != null && !name.isEmpty()) {
             List<Monster> tmp = repo.findMonstersByNameContainingAndUserId(name, userId);
-            System.out.println("Finding monsters with name containing: " + name);
+            logger.info("Finding monsters with name containing: " + name);
             return tmp;
         }
         return null;
@@ -56,7 +59,7 @@ public class MonsterController {
     @RequestMapping(method=RequestMethod.GET, value = "/monsters", params = "userId")
     public List<Monster> searchByUser(@RequestParam(name = "userId") String userId) {
         List<Monster> tmp = repo.findMonstersByUserId(userId);
-        System.out.println("Finding monster by user: " + userId);
+        logger.info("Finding monster by user: " + userId);
         return tmp;
 
     }
@@ -64,7 +67,7 @@ public class MonsterController {
 
     @RequestMapping(method=RequestMethod.GET, value = "/monsters/export/{id}")
     public ResponseEntity<byte[]> exportMonster(@PathVariable String id) throws Exception {
-        System.out.println("Exporting monster by id:" + id);
+        logger.info("Exporting monster by id:" + id);
         Monster tmp = repo.findMonsterById(id);
         if (tmp == null) {
             return null;
@@ -81,7 +84,7 @@ public class MonsterController {
 
     @RequestMapping(method=RequestMethod.GET, value = "/monsters/export", params = "userId")
     public ResponseEntity<byte[]> exportAllMonstersByUser(@RequestParam String userId) throws Exception {
-        System.out.println("Exporting monsters by user Id:" + userId);
+        logger.info("Exporting monsters by user Id:" + userId);
         LinkedList<Monster> tmp = new LinkedList<>(repo.findMonstersByUserId(userId));
         if (tmp.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body( new byte[]{} );
@@ -103,9 +106,9 @@ public class MonsterController {
         else if (monster == null || !userId.equals(monster.getUserId()))
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
-        System.out.println("Saving changes to monster:" + monster.getId());
+        logger.info("Saving changes to monster:" + monster.getId());
         Monster tmp = repo.save(monster);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(tmp);
+        return ResponseEntity.status(HttpStatus.FOUND).body(tmp);
     }
 
     @RequestMapping(method=RequestMethod.DELETE, value = "/monsters/{id}", params = "userId")
@@ -113,7 +116,7 @@ public class MonsterController {
         if (userId == null || userId.isEmpty())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Monster());
 
-        System.out.println("Deleting monster by Id:" + id);
+        logger.info("Deleting monster by Id:" + id);
         Long tmp = repo.deleteMonsterById(id);
         if (tmp == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Monster());
@@ -121,6 +124,4 @@ public class MonsterController {
 
         return ResponseEntity.status(HttpStatus.OK).body(new Monster());
     }
-
-
 }

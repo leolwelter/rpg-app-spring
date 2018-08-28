@@ -2,12 +2,9 @@ package com.lw.dmappserver.service;
 
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.events.PdfDocumentEvent;
-import com.itextpdf.kernel.font.PdfFont;
-import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.ColumnDocumentRenderer;
 import com.itextpdf.layout.Document;
@@ -16,8 +13,11 @@ import com.itextpdf.layout.property.AreaBreakType;
 import com.itextpdf.layout.property.TextAlignment;
 import com.lw.dmappserver.monster.Feature;
 import com.lw.dmappserver.monster.Monster;
+import org.springframework.util.ResourceUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.Map;
@@ -28,7 +28,6 @@ public class ExportService {
     private PdfWriter writer;
     private static String logoPath = "_assets/favicon.ico";
     private static String scrollPath = "_assets/scroll-A4.png";
-
     public ExportService() {
         outputStream = new ByteArrayOutputStream();
     }
@@ -68,12 +67,15 @@ public class ExportService {
         return outputStream.toByteArray();
     }
 
-    private Document writeMonsterProperties(Document document, Monster monster) throws MalformedURLException {
-        // logo
-        Image logoImage = new Image(ImageDataFactory.create(logoPath)).setWidth(16);
+    private Document writeMonsterProperties(Document document, Monster monster) throws MalformedURLException, FileNotFoundException {
+        // image resources
+        File logoFile = ResourceUtils.getFile("classpath:" + logoPath);
+        File scrollFile = ResourceUtils.getFile("classpath:" + scrollPath);
+
+        Image logoImage = new Image(ImageDataFactory.create(logoFile.getPath())).setWidth(16);
 
         // add event handler to PdfDocument that adds the background image and page number every time a page is finalized
-        Image backgroundImage = new Image(ImageDataFactory.create(scrollPath))
+        Image backgroundImage = new Image(ImageDataFactory.create(scrollFile.getPath()))
                 .scaleToFit(PageSize.A4.getWidth(), PageSize.A4.getHeight())
                 .setFixedPosition(0,0);
         BackgroundEventHandler handler = new BackgroundEventHandler(backgroundImage);

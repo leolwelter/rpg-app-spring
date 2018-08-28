@@ -1,8 +1,9 @@
 package com.lw.dmappserver.user;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +14,8 @@ import java.util.Optional;
 public class UserController {
     private UserRepository repo;
     private PasswordEncoder encoder;
+    private static final Logger logger = LogManager.getLogger(UserController.class);
+
 
     // constructor injection preferred
     public UserController(UserRepository repo, PasswordEncoder encoder) {
@@ -24,13 +27,13 @@ public class UserController {
     @RequestMapping(method=RequestMethod.POST, value = "/users")
     public ResponseEntity createUser(@RequestBody User newUser) {
         if (newUser.getUsername().isEmpty() || newUser.getPassword().isEmpty()) {
-            System.out.println("User Not Created");
+            logger.info("User Not Created");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new User());
         }
 
         newUser.setPassword(this.encoder.encode(newUser.getPassword()));
         newUser = repo.insert(newUser);
-        System.out.println("User created: " + newUser.toString());
+        logger.info("User created: " + newUser.toString());
         return ResponseEntity
                 .status(HttpStatus.ACCEPTED)
                 .body(newUser);
@@ -49,7 +52,7 @@ public class UserController {
                 || !encoder.matches(userToLogin.getPassword(), foundUser.getPassword()))
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new User());
 
-        System.out.println("Logging in " +
+        logger.info("Logging in " +
                 foundUser.getUsername() + " :: " +
                 foundUser.getPassword() + " :: " + foundUser.get_id());
         return ResponseEntity
