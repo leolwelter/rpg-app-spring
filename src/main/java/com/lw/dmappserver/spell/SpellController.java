@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedList;
 import java.util.List;
 
 @RestController
@@ -52,16 +53,27 @@ public class SpellController {
         }
     }
 
+    @RequestMapping(method=RequestMethod.GET, value = "/spells", params = {"name", "userId"})
+    public List<Spell> searchByName(@RequestParam(name = "name") String name,
+                                    @RequestParam(name = "userId") String userId) {
+        if (userId != null && name != null && !name.isEmpty()) {
+            List<Spell> tmp = repo.findSpellsByNameContainingAndUserId(name, userId);
+            logger.info("Finding spells with name containing: " + name);
+            return tmp;
+        }
+        return null;
+    }
+
     @RequestMapping(method=RequestMethod.GET, value = "/spells", params = "userId")
     public ResponseEntity<List<Spell>> findByUser(@RequestParam(name = "userId") String userId) {
         logger.info("Finding spells by user: " + userId);
         List<Spell> tmp = repo.findSpellsByUserId(userId);
-        if (tmp != null) {
+        if (tmp != null && tmp.size() > 0) {
             logger.info("Found " + tmp.size() + " records");
             return ResponseEntity.status(HttpStatus.FOUND).body(tmp);
         } else {
             logger.warn("Found no records belonging to user");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return ResponseEntity.status(HttpStatus.OK).body(new LinkedList<>());
         }
     }
 

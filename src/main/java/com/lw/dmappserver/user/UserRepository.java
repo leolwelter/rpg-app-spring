@@ -9,5 +9,6 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 public interface UserRepository extends MongoRepository<User, String> {
     User findUserBy_id(String id);
     User findUserByUsername(String username);
+    User findUserByEmail(String email);
 }
 

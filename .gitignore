@@ -26,5 +26,6 @@
 
 ### etc ###
 log*
+*.log
 src/main/resources/static/
 _assets/

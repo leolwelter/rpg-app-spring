@@ -31,6 +31,13 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new User());
         }
 
+        if (repo.findUserByUsername(newUser.getUsername()) != null ||
+            repo.findUserByEmail(newUser.getEmail()) != null)
+        {
+            logger.warn("User already exists");
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
         newUser.setPassword(this.encoder.encode(newUser.getPassword()));
         newUser = repo.insert(newUser);
         logger.info("User created: " + newUser.toString());
@@ -42,8 +49,12 @@ public class UserController {
     // User Login
     @RequestMapping(method=RequestMethod.POST, value = "/users/login")
     public ResponseEntity<User> loginUser(@RequestBody User userToLogin) {
-        if (userToLogin == null || userToLogin.getUsername().isEmpty() || userToLogin.getPassword().isEmpty())
+        if (userToLogin.getUsername() == null ||
+                userToLogin.getPassword() == null ||
+                userToLogin.getUsername().isEmpty() ||
+                userToLogin.getPassword().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new User());
+        }
 
         User foundUser = repo.findUserByUsername(userToLogin.getUsername());
 

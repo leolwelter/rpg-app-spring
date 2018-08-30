@@ -62,7 +62,6 @@ public class MonsterController {
         List<Monster> tmp = repo.findMonstersByUserId(userId);
         logger.info("Finding monster by user: " + userId);
         return tmp;
-
     }
 
 
