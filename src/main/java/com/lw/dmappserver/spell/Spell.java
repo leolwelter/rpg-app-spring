@@ -123,4 +123,22 @@ public class Spell {
     public void setRitual(boolean ritual) {
         isRitual = ritual;
     }
+
+    @Override
+    public String toString() {
+        return "Spell{" +
+                "id='" + id + '\'' +
+                ", userId='" + userId + '\'' +
+                ", name='" + name + '\'' +
+                ", level=" + level +
+                ", classes=" + classes +
+                ", school='" + school + '\'' +
+                ", castingTime='" + castingTime + '\'' +
+                ", range='" + range + '\'' +
+                ", components='" + components + '\'' +
+                ", duration='" + duration + '\'' +
+                ", isConcentration=" + isConcentration +
+                ", isRitual=" + isRitual +
+                '}';
+    }
 }

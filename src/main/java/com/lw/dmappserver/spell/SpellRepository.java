@@ -9,7 +9,8 @@ import java.util.List;
 @RepositoryRestResource(collectionResourceRel = "spells", path = "spells")
 public interface SpellRepository extends MongoRepository<Spell , String> {
     Spell findSpellById(String id);
-    Spell findSpellsByUserId(String userId);
+    List<Spell> findSpellsByUserId(String userId);
     List<Spell> findSpellsByNameContainingAndUserId(String substr, String userId);
-
+    Spell findSpellByName(String name);
+    Spell findSpellByNameAndUserId(String name, String userId);
 }

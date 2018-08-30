@@ -22,7 +22,8 @@ public class MonsterController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/monsters", params = "userId")
-    public ResponseEntity<Monster> createMonster(@RequestParam String userId, @RequestBody Monster toCreate) {
+    public ResponseEntity<Monster> createMonster(@RequestParam String userId,
+                                                 @RequestBody Monster toCreate) {
         if (userId == null || userId.isEmpty())
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Monster());
 
