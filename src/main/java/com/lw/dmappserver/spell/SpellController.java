@@ -1,5 +1,6 @@
 package com.lw.dmappserver.spell;
 
+import com.lw.dmappserver.factory.ServiceFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -65,15 +66,15 @@ public class SpellController {
     }
 
     @RequestMapping(method=RequestMethod.GET, value = "/spells", params = "userId")
-    public ResponseEntity<List<Spell>> findByUser(@RequestParam(name = "userId") String userId) {
+    public List<Spell> findByUser(@RequestParam(name = "userId") String userId) {
         logger.info("Finding spells by user: " + userId);
         List<Spell> tmp = repo.findSpellsByUserId(userId);
         if (tmp != null && tmp.size() > 0) {
             logger.info("Found " + tmp.size() + " records");
-            return ResponseEntity.status(HttpStatus.FOUND).body(tmp);
+            return tmp;
         } else {
             logger.warn("Found no records belonging to user");
-            return ResponseEntity.status(HttpStatus.OK).body(new LinkedList<>());
+            return new LinkedList<>();
         }
     }
 
@@ -87,6 +88,40 @@ public class SpellController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(tmp);
         }
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value = "/spells/export/{id}")
+    public ResponseEntity<byte[]> exportSpell(@PathVariable String id) throws Exception {
+        logger.info("Exporting spell by id:" + id);
+        Spell tmp = repo.findSpellById(id);
+        if (tmp == null) {
+            return null;
+        }
+
+        // export to pdf
+        byte[] data = ServiceFactory.createExportService().exportToPdf(tmp);
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .header("Content-disposition", "attachment; filename=spell-" + tmp.getName() + ".pdf")
+                .header("Content-type", "application/pdf")
+                .body(data);
+    }
+
+    @RequestMapping(method=RequestMethod.GET, value = "/spells/export", params = "userId")
+    public ResponseEntity<byte[]> exportAllSpellsByUser(@RequestParam String userId) throws Exception {
+        logger.info("Exporting spells by user Id:" + userId);
+        LinkedList<Spell> tmp = new LinkedList<>(repo.findSpellsByUserId(userId));
+        if (tmp.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body( new byte[]{} );
+        }
+
+        // export to pdf
+        byte[] data = ServiceFactory.createExportService().exportSpellsToPdf(tmp);
+        return ResponseEntity
+                .status(HttpStatus.ACCEPTED)
+                .header("Content-disposition", "attachment; filename=spells-" + userId + ".pdf")
+                .header("Content-type", "application/pdf")
+                .body(data);
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/spells", params = "userId")

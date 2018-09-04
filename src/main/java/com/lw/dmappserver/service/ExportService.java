@@ -13,6 +13,7 @@ import com.itextpdf.layout.property.AreaBreakType;
 import com.itextpdf.layout.property.TextAlignment;
 import com.lw.dmappserver.monster.Feature;
 import com.lw.dmappserver.monster.Monster;
+import com.lw.dmappserver.spell.Spell;
 import org.springframework.util.ResourceUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -46,7 +47,21 @@ public class ExportService {
         return outputStream.toByteArray();
     }
 
-    public byte[] exportToPdf(LinkedList<Monster> monsterList) throws Exception {
+    public byte[] exportToPdf(Spell spell) throws Exception {
+        // document properties
+        outputStream.flush();
+        writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        // document contents
+        writeSpellProperties(document, spell);
+
+        document.close();
+        return outputStream.toByteArray();
+    }
+
+    public byte[] exportMonstersToPdf(LinkedList<Monster> monsterList) throws Exception {
         if (monsterList.size() == 0)
             return null;
 
@@ -59,6 +74,27 @@ public class ExportService {
         // document contents
         for (Monster m: monsterList) {
             writeMonsterProperties(document, m);
+            document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+        }
+
+        document.getPdfDocument().removePage(document.getPdfDocument().getLastPage());
+        document.close();
+        return outputStream.toByteArray();
+    }
+
+    public byte[] exportSpellsToPdf(LinkedList<Spell> spellList) throws Exception {
+        if (spellList.size() == 0)
+            return null;
+
+        // document properties
+        outputStream.flush();
+        writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        // document contents
+        for (Spell m: spellList) {
+            writeSpellProperties(document, m);
             document.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
         }
 
@@ -154,6 +190,53 @@ public class ExportService {
                 .add(features)
                 .add(actions)
                 .add(legendaryActions)
+                .add(new AreaBreak(AreaBreakType.NEXT_PAGE));
+
+        return document;
+    }
+
+    private Document writeSpellProperties(Document document, Spell spell) throws MalformedURLException, FileNotFoundException {
+        // image resources
+        File logoFile = ResourceUtils.getFile("classpath:" + logoPath);
+        File scrollFile = ResourceUtils.getFile("classpath:" + scrollPath);
+
+        Image logoImage = new Image(ImageDataFactory.create(logoFile.getPath())).setWidth(16);
+
+        // add event handler to PdfDocument that adds the background image and page number every time a page is finalized
+        Image backgroundImage = new Image(ImageDataFactory.create(scrollFile.getPath()))
+                .scaleToFit(PageSize.A4.getWidth(), PageSize.A4.getHeight())
+                .setFixedPosition(0,0);
+        BackgroundEventHandler handler = new BackgroundEventHandler(backgroundImage);
+        document.getPdfDocument().addEventHandler(PdfDocumentEvent.END_PAGE, handler);
+
+        // set column configurations
+        float offSet = 36;
+        float gutter = 23;
+        int nColumns = 2;
+        float columnWidth = (PageSize.A4.getWidth() - offSet * nColumns) / nColumns - gutter;
+        float columnHeight = PageSize.A4.getHeight() - offSet * nColumns;
+        Rectangle[] columns = {
+                new Rectangle(offSet, offSet, columnWidth, columnHeight),
+                new Rectangle(offSet + columnWidth + gutter, offSet, columnWidth, columnHeight)
+        };
+        document.setRenderer(new ColumnDocumentRenderer(document, columns));
+        document.setTextAlignment(TextAlignment.JUSTIFIED);
+
+        // Spell properties
+        Paragraph spellProperties = new Paragraph();
+        spellProperties.add(new Text("Properties\n").setBold().setUnderline().setTextAlignment(TextAlignment.CENTER));
+        for (Map.Entry<String, String> s : spell.getPropertyMap().entrySet()) {
+            spellProperties
+                    .add(new Text(s.getKey()).setBold())
+                    .add(new Tab())
+                    .add(new Text("\n"))
+                    .add(new Text(s.getValue()).setTextAlignment(TextAlignment.RIGHT))
+                    .add(new Text("\n"));
+        }
+
+        // construct document from component parts
+        document.add(logoImage)
+                .add(spellProperties)
                 .add(new AreaBreak(AreaBreakType.NEXT_PAGE));
 
         return document;

@@ -3,13 +3,14 @@ package com.lw.dmappserver.spell;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Document(collection = "spells")
 public class Spell {
     @Id
     private String id;
-
 
 
     private String userId;
@@ -23,6 +24,8 @@ public class Spell {
     private String duration;
     private boolean isConcentration;
     private boolean isRitual;
+    private String description;
+    private String sub_school;
 
     public Spell() {
     }
@@ -124,6 +127,22 @@ public class Spell {
         isRitual = ritual;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getSub_school() {
+        return sub_school;
+    }
+
+    public void setSub_school(String sub_school) {
+        this.sub_school = sub_school;
+    }
+
     @Override
     public String toString() {
         return "Spell{" +
@@ -139,6 +158,30 @@ public class Spell {
                 ", duration='" + duration + '\'' +
                 ", isConcentration=" + isConcentration +
                 ", isRitual=" + isRitual +
+                ", description=" + description +
                 '}';
+    }
+
+    public Map<String, String> getPropertyMap() {
+        Map<String, String> tmp = new LinkedHashMap<>();
+        tmp.put("Name", getName());
+        tmp.put("Level", "" + getLevel());
+        if (getClasses() != null) {
+            tmp.put("Classes", String.join(" ", getClasses()));
+        }
+        else {
+                tmp.put("Classes","-");
+        }
+        tmp.put("School", getSchool());
+        if (getSub_school() != null && getSub_school().matches("[rR]itual")) {
+            tmp.put("Casting Time", getCastingTime() + " (Ritual)");
+        } else {
+            tmp.put("Casting Time", getCastingTime());
+        }
+        tmp.put("Range", getRange());
+        tmp.put("Components", getComponents());
+        tmp.put("Duration", getDuration());
+        tmp.put("Description", getDescription());
+        return tmp;
     }
 }

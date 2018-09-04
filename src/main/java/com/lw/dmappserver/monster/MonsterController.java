@@ -1,14 +1,12 @@
 package com.lw.dmappserver.monster;
 
 import com.lw.dmappserver.factory.ServiceFactory;
-import com.lw.dmappserver.service.ExportService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -91,7 +89,7 @@ public class MonsterController {
         }
 
         // export to pdf
-        byte[] data = ServiceFactory.createExportService().exportToPdf(tmp);
+        byte[] data = ServiceFactory.createExportService().exportMonstersToPdf(tmp);
         return ResponseEntity
                 .status(HttpStatus.ACCEPTED)
                 .header("Content-disposition", "attachment; filename=monsters-" + userId + ".pdf")

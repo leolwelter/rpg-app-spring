@@ -65,6 +65,7 @@ public class UserController {
 
         logger.info("Logging in " +
                 foundUser.getUsername() + " :: " +
+
                 foundUser.getPassword() + " :: " + foundUser.get_id());
         return ResponseEntity
                 .ok(userToLogin);

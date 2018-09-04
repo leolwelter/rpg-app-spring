@@ -25,7 +25,7 @@
 /.nb-gradle/
 
 ### etc ###
-log*
-*.log
+log.*
+*.log*
 src/main/resources/static/
 _assets/
