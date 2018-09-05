@@ -1,5 +1,5 @@
 ### Spring-backed TTRPG Content Generator
-* Custom monster generation, saving, editing, and exporting
+* Custom monster and spell generation, saving, editing, and exporting
 * That's it for now, honestly. I'll add more when I can.
 
 ### Short Technical Overview
