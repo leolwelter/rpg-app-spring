@@ -14,12 +14,14 @@ import com.itextpdf.layout.property.TextAlignment;
 import com.lw.dmappserver.monster.Feature;
 import com.lw.dmappserver.monster.Monster;
 import com.lw.dmappserver.spell.Spell;
-import org.springframework.util.ResourceUtils;
+import org.apache.commons.io.IOUtils;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -29,7 +31,10 @@ public class ExportService {
     private PdfWriter writer;
     private static String logoPath = "_assets/favicon.ico";
     private static String scrollPath = "_assets/scroll-A4.png";
+    private ResourceLoader resourceLoader;
+
     public ExportService() {
+        resourceLoader = new DefaultResourceLoader();
         outputStream = new ByteArrayOutputStream();
     }
 
@@ -103,15 +108,20 @@ public class ExportService {
         return outputStream.toByteArray();
     }
 
-    private Document writeMonsterProperties(Document document, Monster monster) throws MalformedURLException, FileNotFoundException {
+    private Document writeMonsterProperties(Document document, Monster monster) throws IOException {
         // image resources
-        File logoFile = ResourceUtils.getFile("classpath:" + logoPath);
-        File scrollFile = ResourceUtils.getFile("classpath:" + scrollPath);
+        Resource logoResource = resourceLoader.getResource("classpath:" + logoPath);
+        Resource scrollResource = resourceLoader.getResource("classpath:" + scrollPath);
+        InputStream logoInputStream = logoResource.getInputStream();
+        InputStream scrollInputStream = scrollResource.getInputStream();
 
-        Image logoImage = new Image(ImageDataFactory.create(logoFile.getPath())).setWidth(16);
+        byte[] logoData = IOUtils.toByteArray(logoInputStream);
+        byte[] scrollData = IOUtils.toByteArray(scrollInputStream);
+
+        Image logoImage = new Image(ImageDataFactory.create(logoData)).setWidth(16);
 
         // add event handler to PdfDocument that adds the background image and page number every time a page is finalized
-        Image backgroundImage = new Image(ImageDataFactory.create(scrollFile.getPath()))
+        Image backgroundImage = new Image(ImageDataFactory.create(scrollData))
                 .scaleToFit(PageSize.A4.getWidth(), PageSize.A4.getHeight())
                 .setFixedPosition(0,0);
         BackgroundEventHandler handler = new BackgroundEventHandler(backgroundImage);
@@ -195,15 +205,20 @@ public class ExportService {
         return document;
     }
 
-    private Document writeSpellProperties(Document document, Spell spell) throws MalformedURLException, FileNotFoundException {
+    private Document writeSpellProperties(Document document, Spell spell) throws IOException {
         // image resources
-        File logoFile = ResourceUtils.getFile("classpath:" + logoPath);
-        File scrollFile = ResourceUtils.getFile("classpath:" + scrollPath);
+        Resource logoResource = resourceLoader.getResource("classpath:" + logoPath);
+        Resource scrollResource = resourceLoader.getResource("classpath:" + scrollPath);
+        InputStream logoInputStream = logoResource.getInputStream();
+        InputStream scrollInputStream = scrollResource.getInputStream();
 
-        Image logoImage = new Image(ImageDataFactory.create(logoFile.getPath())).setWidth(16);
+        byte[] logoData = IOUtils.toByteArray(logoInputStream);
+        byte[] scrollData = IOUtils.toByteArray(scrollInputStream);
+
+        Image logoImage = new Image(ImageDataFactory.create(logoData)).setWidth(16);
 
         // add event handler to PdfDocument that adds the background image and page number every time a page is finalized
-        Image backgroundImage = new Image(ImageDataFactory.create(scrollFile.getPath()))
+        Image backgroundImage = new Image(ImageDataFactory.create(scrollData))
                 .scaleToFit(PageSize.A4.getWidth(), PageSize.A4.getHeight())
                 .setFixedPosition(0,0);
         BackgroundEventHandler handler = new BackgroundEventHandler(backgroundImage);
